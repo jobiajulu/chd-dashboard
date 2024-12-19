@@ -4,8 +4,10 @@ from sqlalchemy.orm import sessionmaker
 from database.models import Hospital, MortalityData
 import pandas as pd
 import os
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Database setup
 engine = create_engine('sqlite:///hospitals.db')
@@ -154,4 +156,7 @@ def get_visualization_data():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
-    app.run(host='0.0.0.0', port=port)
+    # Use 127.0.0.1 for local development, 0.0.0.0 for production
+    #host = '0.0.0.0' if os.environ.get('RENDER') else 
+    host = '127.0.0.1'
+    app.run(host=host, port=port, debug=True)
