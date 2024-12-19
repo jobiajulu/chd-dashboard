@@ -441,6 +441,74 @@
                 });
         }
 
+        function createScatterPlot(data, xMetric, yMetric) {
+            const trace = {
+                x: data.map(d => d[xMetric]),
+                y: data.map(d => d[yMetric]),
+                mode: 'markers',
+                type: 'scatter',
+                text: data.map(d => d.name),
+                hovertemplate: '%{text}<br>' +
+                    xMetric + ': %{x}<br>' +
+                    yMetric + ': %{y}<br>',
+                marker: {
+                    size: 10
+                }
+            };
+
+            const layout = {
+                title: `${yMetric} vs ${xMetric}`,
+                xaxis: { title: xMetric },
+                yaxis: { title: yMetric },
+                hovermode: 'closest',
+                margin: { t: 50, l: 60, r: 40, b: 60 },
+                autosize: true,
+                width: null,  // Let Plotly calculate width based on container
+                height: 600
+            };
+
+            const config = {
+                responsive: true,
+                displayModeBar: true
+            };
+
+            Plotly.newPlot('visualizationChart', [trace], layout, config).then(() => {
+                window.dispatchEvent(new Event('resize'));
+            });
+        }
+
+        function createBarChart(data, metric) {
+            const trace = {
+                x: data.map(d => d.name),
+                y: data.map(d => d[metric]),
+                type: 'bar',
+                text: data.map(d => d[metric].toFixed(2)),
+                textposition: 'auto'
+            };
+
+            const layout = {
+                title: metric,
+                xaxis: {
+                    tickangle: -45,
+                    automargin: true
+                },
+                yaxis: { title: metric },
+                margin: { t: 50, l: 60, r: 40, b: 120 },
+                autosize: true,
+                width: null,  // Let Plotly calculate width based on container
+                height: 600
+            };
+
+            const config = {
+                responsive: true,
+                displayModeBar: true
+            };
+
+            Plotly.newPlot('visualizationChart', [trace], layout, config).then(() => {
+                window.dispatchEvent(new Event('resize'));
+            });
+        }
+
         function createComparisonChart(data) {
             const metrics = [
                 { key: 'total_cases', label: 'Total Cases' },
@@ -474,14 +542,19 @@
                     y: -0.2
                 },
                 margin: { t: 50, l: 60, r: 40, b: 100 },
-                autosize: true
+                autosize: true,
+                width: null,  // Let Plotly calculate width based on container
+                height: 600
             };
 
             const config = {
-                responsive: true
+                responsive: true,
+                displayModeBar: true
             };
 
-            Plotly.newPlot('comparisonChart', traces, layout, config);
+            Plotly.newPlot('comparisonChart', traces, layout, config).then(() => {
+                window.dispatchEvent(new Event('resize'));
+            });
         }
 
         function updateVisualization() {
@@ -511,86 +584,41 @@
                 });
         }
 
-        function createScatterPlot(data, metric1, metric2) {
-            const trace = {
-                x: data.map(d => d[metric1]),
-                y: data.map(d => d[metric2]),
-                mode: 'markers+text',
-                type: 'scatter',
-                text: data.map(d => d.name),
-                textposition: 'top center',
-                marker: {
-                    size: 10
-                }
-            };
-
-            const layout = {
-                title: `${getMetricLabel(metric2)} vs ${getMetricLabel(metric1)}`,
-                xaxis: {
-                    title: getMetricLabel(metric1),
-                    zeroline: true,
-                    rangemode: 'tozero'
-                },
-                yaxis: {
-                    title: getMetricLabel(metric2),
-                    zeroline: true,
-                    rangemode: 'tozero'
-                },
-                showlegend: false,
-                margin: { t: 50, l: 60, r: 40, b: 50 },
-                autosize: true
-            };
-
-            const config = {
-                responsive: true
-            };
-
-            Plotly.newPlot('visualizationChart', [trace], layout, config);
-        }
-
-        function getMetricLabel(metric) {
-            const labels = {
-                'total_cases': 'Number of Cases',
-                'observed_mortality_rate': 'Observed Mortality Rate (%)',
-                'expected_mortality_rate': 'Expected Mortality Rate (%)',
-                'oe_ratio': 'O/E Ratio'
-            };
-            return labels[metric] || metric;
-        }
-
-        function createBarChart(data, metric) {
-            const trace = {
-                x: data.map(d => d.name),
-                y: data.map(d => d[metric]),
-                type: 'bar',
-                name: metric
-            };
-
-            const layout = {
-                title: `${getMetricLabel(metric)} by Hospital`,
-                xaxis: {
-                    tickangle: -45,
-                    automargin: true
-                },
-                yaxis: { title: getMetricLabel(metric) }
-            };
-
-            Plotly.newPlot('visualizationChart', [trace], layout);
-        }
-
-        // Initialize visualization on page load
-        $(document).ready(function() {
-            updateVisualization();
+        function resizeCharts() {
+            const visualizationChart = document.getElementById('visualizationChart');
+            const comparisonChart = document.getElementById('comparisonChart');
             
-            // Force Plotly to recognize container size
-            setTimeout(function() {
-                window.dispatchEvent(new Event('resize'));
-            }, 100);
-        });
+            if (visualizationChart) {
+                Plotly.Plots.resize(visualizationChart);
+            }
+            if (comparisonChart) {
+                Plotly.Plots.resize(comparisonChart);
+            }
+        }
 
-        // Handle window resize
-        $(window).on('resize', function() {
-            Plotly.Plots.resize('visualizationChart');
+        // Initialize everything when document is ready
+        $(document).ready(function() {
+            initializeHospitalAutocomplete();
+            
+            // Event listeners for comparison
+            $('#hospital1, #hospital2, #comparisonCategory').on('change', updateComparison);
+            
+            // Event listeners for visualization
+            $('#vizCategory, #plotType, #metric1, #metric2').on('change', updateVisualization);
+            $('#selectHospitalsToggle').on('change', function() {
+                $('#hospitalSelector').toggle(this.checked);
+                updateVisualization();
+            });
+            $('#hospitalSelector').on('change', updateVisualization);
+
+            // Handle window resize
+            $(window).on('resize', resizeCharts);
+
+            // Initial visualization
+            updateVisualization();
+
+            // Force resize after a short delay to ensure proper rendering
+            setTimeout(resizeCharts, 100);
         });
     </script>
 </body>
