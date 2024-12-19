@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database.models import Hospital, MortalityData
 import pandas as pd
+import os
 
 app = Flask(__name__)
 
@@ -152,4 +153,5 @@ def get_visualization_data():
     return jsonify(visualization_data)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5001))
+    app.run(host='0.0.0.0', port=port)
