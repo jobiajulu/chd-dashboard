@@ -156,7 +156,29 @@
                     <div class="card-header">
                         <div class="row">
                             <div class="col-md-3">
-                                <select id="visualizationCategory" class="form-select">
+                                <select id="plotType" class="form-select">
+                                    <option value="scatter" selected>Two Metrics (Scatter)</option>
+                                    <option value="single">Single Metric</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="metric1" class="form-select">
+                                    <option value="total_cases" selected>Number of Cases</option>
+                                    <option value="observed_mortality_rate">Observed Mortality Rate</option>
+                                    <option value="expected_mortality_rate">Expected Mortality Rate</option>
+                                    <option value="oe_ratio">O/E Ratio</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3" id="metric2Container">
+                                <select id="metric2" class="form-select">
+                                    <option value="observed_mortality_rate" selected>Observed Mortality Rate</option>
+                                    <option value="total_cases">Number of Cases</option>
+                                    <option value="expected_mortality_rate">Expected Mortality Rate</option>
+                                    <option value="oe_ratio">O/E Ratio</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="vizCategory" class="form-select">
                                     <option value="Overall">Overall</option>
                                     <option value="STAT 1">STAT 1</option>
                                     <option value="STAT 2">STAT 2</option>
@@ -165,42 +187,23 @@
                                     <option value="STAT 5">STAT 5</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
-                                <select id="selectedHospitals" class="form-select" multiple>
-                                    <!-- Will be populated dynamically -->
-                                </select>
-                            </div>
-                            <div class="col-md-5">
-                                <div class="btn-group" role="group">
-                                    <input type="radio" class="btn-check" name="vizType" id="scatterPlot" value="scatter" checked>
-                                    <label class="btn btn-outline-primary" for="scatterPlot">Two Variables</label>
-                                    
-                                    <input type="radio" class="btn-check" name="vizType" id="barChart" value="bar">
-                                    <label class="btn btn-outline-primary" for="barChart">Single Variable</label>
-                                </div>
-                            </div>
                         </div>
                         <div class="row mt-3">
-                            <div class="col-md-6" id="metric1Container">
-                                <select id="metric1" class="form-select">
-                                    <option value="total_cases">Number of Cases</option>
-                                    <option value="observed_mortality_rate">Observed Mortality Rate</option>
-                                    <option value="expected_mortality_rate">Expected Mortality Rate</option>
-                                    <option value="oe_ratio">O/E Ratio</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6" id="metric2Container">
-                                <select id="metric2" class="form-select">
-                                    <option value="observed_mortality_rate">Observed Mortality Rate</option>
-                                    <option value="total_cases">Number of Cases</option>
-                                    <option value="expected_mortality_rate">Expected Mortality Rate</option>
-                                    <option value="oe_ratio">O/E Ratio</option>
+                            <div class="col-md-12">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="selectHospitalsToggle">
+                                    <label class="form-check-label" for="selectHospitalsToggle">
+                                        Select specific hospitals
+                                    </label>
+                                </div>
+                                <select id="hospitalSelector" class="form-select" multiple style="display: none;">
+                                    <!-- Hospitals will be populated here -->
                                 </select>
                             </div>
                         </div>
                     </div>
                     <div class="card-body">
-                        <div id="visualizationChart" class="comparison-chart"></div>
+                        <div id="visualizationChart" style="width: 100%; height: 600px;"></div>
                     </div>
                 </div>
             </div>
@@ -404,16 +407,25 @@
         }
 
         function updateVisualization() {
-            const category = $('#visualizationCategory').val();
-            const selectedHospitals = $('#selectedHospitals').val();
+            const category = $('#vizCategory').val();
+            const plotType = $('#plotType').val();
             const metric1 = $('#metric1').val();
             const metric2 = $('#metric2').val();
-            const vizType = $('input[name="vizType"]:checked').val();
+            
+            // Get selected hospitals if any
+            const selectedHospitals = $('#selectHospitalsToggle').is(':checked') 
+                ? $('#hospitalSelector').val() 
+                : [];
+            
+            let url = `/api/visualization?category=${category}`;
+            if (selectedHospitals.length) {
+                selectedHospitals.forEach(h => url += `&hospitals[]=${h}`);
+            }
 
-            fetch(`/api/visualization?category=${category}${selectedHospitals.length ? '&hospitals=' + selectedHospitals.join(',') : ''}`)
+            fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    if (vizType === 'scatter') {
+                    if (plotType === 'scatter') {
                         createScatterPlot(data, metric1, metric2);
                     } else {
                         createBarChart(data, metric1);
@@ -447,10 +459,15 @@
                     rangemode: 'tozero'
                 },
                 showlegend: false,
-                margin: { t: 50, l: 60, r: 40, b: 50 }
+                margin: { t: 50, l: 60, r: 40, b: 50 },
+                autosize: true
             };
 
-            Plotly.newPlot('visualizationChart', [trace], layout);
+            const config = {
+                responsive: true
+            };
+
+            Plotly.newPlot('visualizationChart', [trace], layout, config);
         }
 
         function getMetricLabel(metric) {
@@ -485,21 +502,20 @@
 
         // Initialize visualization on page load
         $(document).ready(function() {
-            // Set default visualization type to scatter plot
-            $('#scatterPlot').prop('checked', true);
-            $('#metric1').val('total_cases');
-            $('#metric2').val('observed_mortality_rate');
-            
-            // Initial visualization update
             updateVisualization();
         });
 
         // Event listeners for visualization controls
-        $('#visualizationCategory, #selectedHospitals, #metric1, #metric2').on('change', updateVisualization);
-        $('input[name="vizType"]').on('change', function() {
-            const isScatter = $(this).val() === 'scatter';
-            $('#metric2Container').toggle(isScatter);
+        $('#vizCategory, #plotType, #metric1, #metric2').on('change', updateVisualization);
+        $('#selectHospitalsToggle').on('change', function() {
+            $('#hospitalSelector').toggle(this.checked);
             updateVisualization();
+        });
+        $('#hospitalSelector').on('change', updateVisualization);
+
+        // Handle window resize
+        $(window).on('resize', function() {
+            Plotly.Plots.resize('visualizationChart');
         });
     </script>
 </body>
