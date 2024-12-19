@@ -39,8 +39,9 @@ ENV/
 .env.local
 .env.*.local
 
-# PDF files (temporary files from scraping)
+# Scraped files
 *.pdf
+*STS Public Reporting.html
 
 # Logs
 *.log
