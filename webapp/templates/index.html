@@ -156,29 +156,7 @@
                     <div class="card-header">
                         <div class="row">
                             <div class="col-md-3">
-                                <select id="plotType" class="form-select">
-                                    <option value="single">Single Metric</option>
-                                    <option value="scatter">Two Metrics (Scatter)</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <select id="metric1" class="form-select">
-                                    <option value="observed_mortality">Observed Mortality Rate</option>
-                                    <option value="expected_mortality">Expected Mortality Rate</option>
-                                    <option value="oe_ratio">O/E Ratio</option>
-                                    <option value="total_cases">Total Cases</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3" id="metric2Container" style="display:none;">
-                                <select id="metric2" class="form-select">
-                                    <option value="observed_mortality">Observed Mortality Rate</option>
-                                    <option value="expected_mortality">Expected Mortality Rate</option>
-                                    <option value="oe_ratio">O/E Ratio</option>
-                                    <option value="total_cases">Total Cases</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <select id="vizCategory" class="form-select">
+                                <select id="visualizationCategory" class="form-select">
                                     <option value="Overall">Overall</option>
                                     <option value="STAT 1">STAT 1</option>
                                     <option value="STAT 2">STAT 2</option>
@@ -187,15 +165,36 @@
                                     <option value="STAT 5">STAT 5</option>
                                 </select>
                             </div>
-                            <div class="col-md-12 mt-3">
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" id="selectHospitalsToggle">
-                                    <label class="form-check-label" for="selectHospitalsToggle">
-                                        Select specific hospitals
-                                    </label>
+                            <div class="col-md-4">
+                                <select id="selectedHospitals" class="form-select" multiple>
+                                    <!-- Will be populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="btn-group" role="group">
+                                    <input type="radio" class="btn-check" name="vizType" id="scatterPlot" value="scatter" checked>
+                                    <label class="btn btn-outline-primary" for="scatterPlot">Two Variables</label>
+                                    
+                                    <input type="radio" class="btn-check" name="vizType" id="barChart" value="bar">
+                                    <label class="btn btn-outline-primary" for="barChart">Single Variable</label>
                                 </div>
-                                <select id="hospitalSelector" class="form-select" multiple style="display: none;">
-                                    <!-- Hospitals will be populated here -->
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6" id="metric1Container">
+                                <select id="metric1" class="form-select">
+                                    <option value="total_cases">Number of Cases</option>
+                                    <option value="observed_mortality_rate">Observed Mortality Rate</option>
+                                    <option value="expected_mortality_rate">Expected Mortality Rate</option>
+                                    <option value="oe_ratio">O/E Ratio</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6" id="metric2Container">
+                                <select id="metric2" class="form-select">
+                                    <option value="observed_mortality_rate">Observed Mortality Rate</option>
+                                    <option value="total_cases">Number of Cases</option>
+                                    <option value="expected_mortality_rate">Expected Mortality Rate</option>
+                                    <option value="oe_ratio">O/E Ratio</option>
                                 </select>
                             </div>
                         </div>
@@ -411,68 +410,103 @@
         }
 
         function updateVisualization() {
-            const plotType = $('#plotType').val();
+            const category = $('#visualizationCategory').val();
+            const selectedHospitals = $('#selectedHospitals').val();
             const metric1 = $('#metric1').val();
             const metric2 = $('#metric2').val();
-            const category = $('#vizCategory').val();
-            
-            // Get selected hospitals if any
-            const selectedHospitals = $('#selectHospitalsToggle').is(':checked') 
-                ? $('#hospitalSelector').val() 
-                : [];
-            
-            let url = `/api/visualization?type=${plotType}&metric1=${metric1}&metric2=${metric2}&category=${category}`;
-            selectedHospitals.forEach(h => url += `&hospitals[]=${h}`);
+            const vizType = $('input[name="vizType"]:checked').val();
 
-            fetch(url)
+            fetch(`/api/visualization?category=${category}${selectedHospitals.length ? '&hospitals=' + selectedHospitals.join(',') : ''}`)
                 .then(response => response.json())
                 .then(data => {
-                    if (plotType === 'single') {
-                        createBarChart(data, metric1);
-                    } else {
+                    if (vizType === 'scatter') {
                         createScatterPlot(data, metric1, metric2);
+                    } else {
+                        createBarChart(data, metric1);
                     }
                 });
         }
 
+        function createScatterPlot(data, metric1, metric2) {
+            const trace = {
+                x: data.map(d => d[metric1]),
+                y: data.map(d => d[metric2]),
+                mode: 'markers+text',
+                type: 'scatter',
+                text: data.map(d => d.name),
+                textposition: 'top center',
+                marker: {
+                    size: 10
+                }
+            };
+
+            const layout = {
+                title: `${getMetricLabel(metric2)} vs ${getMetricLabel(metric1)}`,
+                xaxis: {
+                    title: getMetricLabel(metric1),
+                    zeroline: true,
+                    rangemode: 'tozero'
+                },
+                yaxis: {
+                    title: getMetricLabel(metric2),
+                    zeroline: true,
+                    rangemode: 'tozero'
+                },
+                showlegend: false,
+                margin: { t: 50, l: 60, r: 40, b: 50 }
+            };
+
+            Plotly.newPlot('visualizationChart', [trace], layout);
+        }
+
+        function getMetricLabel(metric) {
+            const labels = {
+                'total_cases': 'Number of Cases',
+                'observed_mortality_rate': 'Observed Mortality Rate (%)',
+                'expected_mortality_rate': 'Expected Mortality Rate (%)',
+                'oe_ratio': 'O/E Ratio'
+            };
+            return labels[metric] || metric;
+        }
+
         function createBarChart(data, metric) {
             const trace = {
-                x: data.map(h => h.name),
-                y: data.map(h => h[metric]),
+                x: data.map(d => d.name),
+                y: data.map(d => d[metric]),
                 type: 'bar',
                 name: metric
             };
 
             const layout = {
-                title: `${metric.replace(/_/g, ' ').toUpperCase()} by Hospital`,
+                title: `${getMetricLabel(metric)} by Hospital`,
                 xaxis: {
                     tickangle: -45,
                     automargin: true
                 },
-                yaxis: { title: metric.replace(/_/g, ' ').toUpperCase() }
+                yaxis: { title: getMetricLabel(metric) }
             };
 
             Plotly.newPlot('visualizationChart', [trace], layout);
         }
 
-        function createScatterPlot(data, metric1, metric2) {
-            const trace = {
-                x: data.map(h => h[metric1]),
-                y: data.map(h => h[metric2]),
-                mode: 'markers+text',
-                type: 'scatter',
-                text: data.map(h => h.name),
-                textposition: 'top center'
-            };
+        // Initialize visualization on page load
+        $(document).ready(function() {
+            // Set default visualization type to scatter plot
+            $('#scatterPlot').prop('checked', true);
+            $('#metric1').val('total_cases');
+            $('#metric2').val('observed_mortality_rate');
+            
+            // Initial visualization update
+            updateVisualization();
+        });
 
-            const layout = {
-                title: 'Hospital Comparison',
-                xaxis: { title: metric1.replace(/_/g, ' ').toUpperCase() },
-                yaxis: { title: metric2.replace(/_/g, ' ').toUpperCase() }
-            };
-
-            Plotly.newPlot('visualizationChart', [trace], layout);
-        }
+        // Event listeners for visualization controls
+        $('#visualizationCategory, #selectedHospitals, #metric1, #metric2').on('change', updateVisualization);
+        $('input[name="vizType"]').on('change', function() {
+            const isScatter = $(this).val() === 'scatter';
+            $('#metric2Container').toggle(isScatter);
+            updateVisualization();
+        });
     </script>
 </body>
 </html>
