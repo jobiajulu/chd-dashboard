@@ -45,3 +45,6 @@ ENV/
 
 # Logs
 *.log
+
+# Don't ignore data files
+!data/*.json
