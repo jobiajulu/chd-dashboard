@@ -30,10 +30,6 @@ ENV/
 *.swp
 *.swo
 
-# Database
-*.db
-*.sqlite3
-
 # Local development
 .env
 .env.local
@@ -46,5 +42,6 @@ ENV/
 # Logs
 *.log
 
-# Don't ignore data files
+# Don't ignore data files and database
 !data/*.json
+!*.db
