@@ -53,6 +53,9 @@
                 <a class="nav-link" id="visualization-tab" data-bs-toggle="tab" href="#visualization" role="tab">Visualization</a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" id="author-tab" data-bs-toggle="tab" href="#author" role="tab">Author</a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" id="about-tab" data-bs-toggle="tab" href="#about" role="tab">About</a>
             </li>
         </ul>
@@ -208,11 +211,11 @@
                 </div>
             </div>
 
-            <!-- About Section -->
-            <div class="tab-pane fade" id="about" role="tabpanel">
+            <!-- Author Section -->
+            <div class="tab-pane fade" id="author" role="tabpanel">
                 <div class="card">
                     <div class="card-body">
-                        <h4>About</h4>
+                        <h4>Author</h4>
                         <p>This dashboard provides an enhanced interface for analyzing STS (Society of Thoracic Surgeons) Congenital Heart Surgery data. It was created by Joseph Obiajulu, a third-year medical student at NYU Grossman School of Medicine.</p>
 
                         <h4>Data Source</h4>
@@ -223,6 +226,46 @@
 
                         <h4>Source Code</h4>
                         <p>The source code for this project is available on <a href="https://github.com/jobiajulu/chd-dashboard" target="_blank">GitHub</a>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Section -->
+            <div class="tab-pane fade" id="about" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>About the STS Congenital Heart Surgery Database</h4>
+                        <p>This dashboard presents hospital-specific results from the STS Congenital Heart Surgery Database (CHSD) over a 4-year period (January 2020 - December 2023).</p>
+
+                        <h4>Important Note on Interpreting Results</h4>
+                        <p class="alert alert-info">
+                            "If Hospital A has a lower mortality rate than Hospital B, it does not necessarily mean that Hospital A is better; it could indicate that Hospital B treated patients with more severe problems."
+                            <br><small class="text-muted">- Society of Thoracic Surgeons</small>
+                        </p>
+
+                        <h4>Understanding STAT Categories</h4>
+                        <p>Congenital heart operations are grouped by complexity in STAT Categories 1-5:</p>
+                        <ul>
+                            <li><strong>STAT 1:</strong> Least complex operations (e.g., ASD or VSD repair)</li>
+                            <li><strong>STAT 2:</strong> Moderate complexity (e.g., Complete AV Canal repair)</li>
+                            <li><strong>STAT 3:</strong> Higher complexity (e.g., Heart transplant)</li>
+                            <li><strong>STAT 4:</strong> High complexity (e.g., Truncus arteriosus repair)</li>
+                            <li><strong>STAT 5:</strong> Highest complexity (e.g., Norwood procedure)</li>
+                        </ul>
+
+                        <h4>Key Metrics Explained</h4>
+                        <ul>
+                            <li><strong>Observed Mortality Rate:</strong> Actual deaths divided by total eligible patients</li>
+                            <li><strong>Expected Mortality Rate:</strong> Estimated deaths based on case complexity</li>
+                            <li><strong>O/E Ratio:</strong> Observed deaths divided by expected deaths
+                                <ul>
+                                    <li>O/E > 1: More deaths than expected</li>
+                                    <li>O/E < 1: Fewer deaths than expected</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <p class="mt-3"><small class="text-muted">Source: Society of Thoracic Surgeons Public Reporting Documentation</small></p>
                     </div>
                 </div>
             </div>
@@ -417,7 +460,7 @@
                 ? $('#hospitalSelector').val() 
                 : [];
             
-            let url = `/api/visualization?category=${category}`;
+            let url = `/api/visualization?type=${plotType}&metric1=${metric1}&metric2=${metric2}&category=${category}`;
             if (selectedHospitals.length) {
                 selectedHospitals.forEach(h => url += `&hospitals[]=${h}`);
             }

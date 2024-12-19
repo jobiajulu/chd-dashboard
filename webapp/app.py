@@ -111,9 +111,9 @@ def compare_hospitals():
 @app.route('/api/visualization')
 def get_visualization_data():
     """Get data for visualizations"""
-    plot_type = request.args.get('type', 'single')
-    metric1 = request.args.get('metric1', 'observed_mortality')
-    metric2 = request.args.get('metric2', 'expected_mortality')
+    plot_type = request.args.get('type', 'scatter')
+    metric1 = request.args.get('metric1', 'total_cases')
+    metric2 = request.args.get('metric2', 'observed_mortality_rate')
     category = request.args.get('category', 'Overall')
     category = parse_stat_category(category)
     
@@ -136,20 +136,13 @@ def get_visualization_data():
     
     results = query.all()
     
-    # Map API parameter names to database column names
-    metric_mapping = {
-        'observed_mortality': 'observed_mortality_rate',
-        'expected_mortality': 'expected_mortality_rate',
-        'oe_ratio': 'oe_ratio',
-        'total_cases': 'total_cases'
-    }
-    
     visualization_data = [{
+        'id': hospital.id,
         'name': hospital.name,
-        'observed_mortality': round(mortality.observed_mortality_rate, 2),
-        'expected_mortality': round(mortality.expected_mortality_rate, 2),
-        'oe_ratio': round(mortality.oe_ratio, 2),
-        'total_cases': mortality.total_cases
+        'total_cases': mortality.total_cases,
+        'observed_mortality_rate': round(mortality.observed_mortality_rate, 2),
+        'expected_mortality_rate': round(mortality.expected_mortality_rate, 2),
+        'oe_ratio': round(mortality.oe_ratio, 2)
     } for hospital, mortality in results]
     
     return jsonify(visualization_data)
@@ -157,5 +150,5 @@ def get_visualization_data():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
     # Use 127.0.0.1 for local development, 0.0.0.0 for production
-    host = '0.0.0.0' if os.environ.get('RENDER') else  '127.0.0.1'
+    host = '0.0.0.0' if os.environ.get('RENDER') else '127.0.0.1'
     app.run(host=host, port=port, debug=True)
