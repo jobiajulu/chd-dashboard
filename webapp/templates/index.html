@@ -117,17 +117,13 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="row">
-                            <div class="col-md-5">
-                                <select id="hospital1Select" class="form-select">
-                                    <option value="">Select First Hospital</option>
-                                </select>
+                            <div class="col-md-4">
+                                <input type="text" id="hospital1" class="form-control" placeholder="Select first hospital">
                             </div>
-                            <div class="col-md-5">
-                                <select id="hospital2Select" class="form-select">
-                                    <option value="">Select Second Hospital</option>
-                                </select>
+                            <div class="col-md-4">
+                                <input type="text" id="hospital2" class="form-control" placeholder="Select second hospital">
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-4">
                                 <select id="comparisonCategory" class="form-select">
                                     <option value="Overall">Overall</option>
                                     <option value="STAT 1">STAT 1</option>
@@ -140,20 +136,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <div id="comparisonChart" class="comparison-chart"></div>
-                        <div class="table-responsive mt-3">
-                            <table id="comparisonTable" class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Metric</th>
-                                        <th id="hospital1Name">Hospital 1</th>
-                                        <th id="hospital2Name">Hospital 2</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-                        </div>
+                        <div id="comparisonChart" style="width: 100%; height: 600px;"></div>
                     </div>
                 </div>
             </div>
@@ -295,7 +278,26 @@
             loadHospitalsData();
             setupEventListeners();
             initializeHospitalSelector();
+            initializeHospitalAutocomplete();
         });
+
+        function initializeHospitalAutocomplete() {
+            fetch('/api/hospitals/list')
+                .then(response => response.json())
+                .then(hospitals => {
+                    const hospitalOptions = hospitals.map(h => ({
+                        id: h.id,
+                        text: h.name
+                    }));
+
+                    $('#hospital1, #hospital2').select2({
+                        data: hospitalOptions,
+                        placeholder: 'Select a hospital',
+                        allowClear: true,
+                        width: '100%'
+                    });
+                });
+        }
 
         function initializeHospitalSelector() {
             // Initialize Select2 for hospital selection
@@ -378,7 +380,7 @@
         }
 
         function updateHospitalSelectors(data) {
-            const selectors = ['#hospital1Select', '#hospital2Select'];
+            const selectors = ['#hospital1', '#hospital2'];
             selectors.forEach(selector => {
                 const select = $(selector);
                 const currentValue = select.val();
@@ -409,7 +411,7 @@
             });
 
             // Comparison selectors change
-            $('#hospital1Select, #hospital2Select, #comparisonCategory').on('change', updateComparison);
+            $('#hospital1, #hospital2, #comparisonCategory').on('change', updateComparison);
 
             // Visualization controls
             $('#plotType').on('change', function() {
@@ -422,8 +424,8 @@
         }
 
         function updateComparison() {
-            const hospital1 = $('#hospital1Select').val();
-            const hospital2 = $('#hospital2Select').val();
+            const hospital1 = $('#hospital1').val();
+            const hospital2 = $('#hospital2').val();
             const category = $('#comparisonCategory').val();
 
             if (!hospital1 || !hospital2) return;
@@ -431,27 +433,55 @@
             fetch(`/api/compare?hospital1=${hospital1}&hospital2=${hospital2}&category=${category}`)
                 .then(response => response.json())
                 .then(data => {
-                    updateComparisonChart(data);
-                    updateComparisonTable(data);
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+                    createComparisonChart(data);
                 });
         }
 
-        function updateComparisonChart(data) {
-            const metrics = ['Observed Mortality Rate', 'Expected Mortality Rate', 'O/E Ratio'];
-            const traces = metrics.map(metric => ({
-                x: [data.hospital1.name, data.hospital2.name],
-                y: [data.hospital1[metric.toLowerCase()], data.hospital2[metric.toLowerCase()]],
-                name: metric,
+        function createComparisonChart(data) {
+            const metrics = [
+                { key: 'total_cases', label: 'Total Cases' },
+                { key: 'observed_mortality_rate', label: 'Observed Mortality Rate (%)' },
+                { key: 'expected_mortality_rate', label: 'Expected Mortality Rate (%)' },
+                { key: 'oe_ratio', label: 'O/E Ratio' }
+            ];
+
+            const traces = [{
+                x: metrics.map(m => m.label),
+                y: metrics.map(m => data.hospital1[m.key]),
+                name: data.hospital1.name,
                 type: 'bar'
-            }));
+            }, {
+                x: metrics.map(m => m.label),
+                y: metrics.map(m => data.hospital2[m.key]),
+                name: data.hospital2.name,
+                type: 'bar'
+            }];
 
             const layout = {
                 barmode: 'group',
                 title: 'Hospital Comparison',
-                yaxis: { title: 'Rate / Ratio' }
+                yaxis: {
+                    title: 'Value',
+                    zeroline: true
+                },
+                showlegend: true,
+                legend: {
+                    orientation: 'h',
+                    y: -0.2
+                },
+                margin: { t: 50, l: 60, r: 40, b: 100 },
+                autosize: true
             };
 
-            Plotly.newPlot('comparisonChart', traces, layout);
+            const config = {
+                responsive: true
+            };
+
+            Plotly.newPlot('comparisonChart', traces, layout, config);
         }
 
         function updateVisualization() {
