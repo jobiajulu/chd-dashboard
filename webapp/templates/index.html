@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STS Congenital Heart Surgery Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+    <style>
+        .nav-tabs .nav-link {
+            color: #495057;
+        }
+        .nav-tabs .nav-link.active {
+            font-weight: bold;
+        }
+        .comparison-chart {
+            height: 500px;
+        }
+        .select2-container {
+            width: 100% !important;
+        }
+        .metric-selector {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">STS Congenital Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#aboutModal">About</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- About Modal -->
+    <div class="modal fade" id="aboutModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">About STS Congenital Dashboard</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h4>Creator</h4>
+                    <p>This dashboard was created by Joseph Obiajulu, a third-year medical student at NYU Grossman School of Medicine.</p>
+
+                    <h4>Citation</h4>
+                    <p>If you use this dashboard in your research, please cite:</p>
+                    <div class="bg-light p-3 rounded">
+                        <p class="mb-0">Obiajulu J. (2024). Interactive Dashboard for STS Congenital Heart Surgery Database Public Reporting. [Publication details pending]</p>
+                    </div>
+
+                    <h4 class="mt-4">Data Source</h4>
+                    <p>All data is sourced from the Society of Thoracic Surgeons (STS) Public Reporting website. The dashboard provides an enhanced interface for analyzing and comparing congenital heart surgery outcomes across participating institutions.</p>
+
+                    <h4>Contact</h4>
+                    <p>For questions or feedback about this dashboard, please contact Joseph Obiajulu at <a href="mailto:joseph.obiajulu@nyulangone.org">joseph.obiajulu@nyulangone.org</a>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid mt-4">
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="datatable-tab" data-bs-toggle="tab" href="#datatable" role="tab">All Hospitals Data</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="comparison-tab" data-bs-toggle="tab" href="#comparison" role="tab">Head-to-Head Comparison</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="visualization-tab" data-bs-toggle="tab" href="#visualization" role="tab">Visualizations</a>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content mt-3">
+            <!-- All Hospitals DataTable -->
+            <div class="tab-pane fade show active" id="datatable" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row align-items-center">
+                            <div class="col-md-3">
+                                <select id="statCategoryFilter" class="form-select">
+                                    <option value="Overall">Overall</option>
+                                    <option value="STAT 1">STAT 1</option>
+                                    <option value="STAT 2">STAT 2</option>
+                                    <option value="STAT 3">STAT 3</option>
+                                    <option value="STAT 4">STAT 4</option>
+                                    <option value="STAT 5">STAT 5</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <label class="input-group-text">Exclude hospitals with cases less than:</label>
+                                    <input type="number" class="form-control" id="minCases" min="0" value="0" style="width: 100px;">
+                                    <button class="btn btn-outline-secondary" type="button" id="applyMinCases">Apply</button>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <h5 class="card-title mb-0">Hospital Performance Data</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table id="hospitalsTable" class="table table-striped" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Hospital</th>
+                                    <th>Total Cases</th>
+                                    <th>Mortalities</th>
+                                    <th>Observed Mortality Rate (%)</th>
+                                    <th>Expected Mortality Rate (%)</th>
+                                    <th>O/E Ratio</th>
+                                    <th>95% CI</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Head-to-Head Comparison -->
+            <div class="tab-pane fade" id="comparison" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <select id="hospital1Select" class="form-select">
+                                    <option value="">Select First Hospital</option>
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <select id="hospital2Select" class="form-select">
+                                    <option value="">Select Second Hospital</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select id="comparisonCategory" class="form-select">
+                                    <option value="Overall">Overall</option>
+                                    <option value="STAT 1">STAT 1</option>
+                                    <option value="STAT 2">STAT 2</option>
+                                    <option value="STAT 3">STAT 3</option>
+                                    <option value="STAT 4">STAT 4</option>
+                                    <option value="STAT 5">STAT 5</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="comparisonChart" class="comparison-chart"></div>
+                        <div class="table-responsive mt-3">
+                            <table id="comparisonTable" class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th id="hospital1Name">Hospital 1</th>
+                                        <th id="hospital2Name">Hospital 2</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualizations -->
+            <div class="tab-pane fade" id="visualization" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <select id="plotType" class="form-select">
+                                    <option value="single">Single Metric</option>
+                                    <option value="scatter">Two Metrics (Scatter)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="metric1" class="form-select">
+                                    <option value="observed_mortality">Observed Mortality Rate</option>
+                                    <option value="expected_mortality">Expected Mortality Rate</option>
+                                    <option value="oe_ratio">O/E Ratio</option>
+                                    <option value="total_cases">Total Cases</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3" id="metric2Container" style="display:none;">
+                                <select id="metric2" class="form-select">
+                                    <option value="observed_mortality">Observed Mortality Rate</option>
+                                    <option value="expected_mortality">Expected Mortality Rate</option>
+                                    <option value="oe_ratio">O/E Ratio</option>
+                                    <option value="total_cases">Total Cases</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="vizCategory" class="form-select">
+                                    <option value="Overall">Overall</option>
+                                    <option value="STAT 1">STAT 1</option>
+                                    <option value="STAT 2">STAT 2</option>
+                                    <option value="STAT 3">STAT 3</option>
+                                    <option value="STAT 4">STAT 4</option>
+                                    <option value="STAT 5">STAT 5</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="selectHospitalsToggle">
+                                    <label class="form-check-label" for="selectHospitalsToggle">
+                                        Select specific hospitals
+                                    </label>
+                                </div>
+                                <select id="hospitalSelector" class="form-select" multiple style="display: none;">
+                                    <!-- Hospitals will be populated here -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="visualizationChart" class="comparison-chart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        let hospitalsTable;
+        let hospitalsList = [];
+        let minCasesFilter = 0;  // Global variable to track current filter value
+        
+        // Initialize DataTable and Select2
+        $(document).ready(function() {
+            loadHospitalsData();
+            setupEventListeners();
+            initializeHospitalSelector();
+        });
+
+        function initializeHospitalSelector() {
+            // Initialize Select2 for hospital selection
+            $('#hospitalSelector').select2({
+                placeholder: 'Type to search hospitals...',
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Load hospitals for selector
+            fetch('/api/hospitals/list')
+                .then(response => response.json())
+                .then(data => {
+                    hospitalsList = data;
+                    const select = $('#hospitalSelector');
+                    select.empty();
+                    data.forEach(hospital => {
+                        select.append(new Option(hospital.name, hospital.id));
+                    });
+                });
+
+            // Toggle hospital selector visibility
+            $('#selectHospitalsToggle').on('change', function() {
+                $('#hospitalSelector').toggle(this.checked);
+                if (!this.checked) {
+                    $('#hospitalSelector').val(null).trigger('change');
+                }
+                updateVisualization();
+            });
+
+            // Update visualization when selection changes
+            $('#hospitalSelector').on('change', updateVisualization);
+        }
+
+        function loadHospitalsData() {
+            const category = $('#statCategoryFilter').val();
+            fetch(`/api/hospitals?category=${category}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (hospitalsTable) {
+                        hospitalsTable.destroy();
+                    }
+                    
+                    // Remove any existing filter functions
+                    $.fn.dataTable.ext.search = [];
+                    
+                    // Add our persistent filter function
+                    $.fn.dataTable.ext.search.push(
+                        function(settings, data) {
+                            if (minCasesFilter <= 0) return true;
+                            const cases = parseInt(data[1]) || 0;
+                            return cases >= minCasesFilter;
+                        }
+                    );
+                    
+                    hospitalsTable = $('#hospitalsTable').DataTable({
+                        data: data,
+                        columns: [
+                            { data: 'name' },
+                            { data: 'total_cases' },
+                            { data: 'mortalities' },
+                            { data: 'observed_mortality_rate' },
+                            { data: 'expected_mortality_rate' },
+                            { data: 'oe_ratio' },
+                            { data: 'ci' }
+                        ],
+                        order: [[0, 'asc']],  // Sort by hospital name (first column) ascending
+                        dom: 'Bfrtip',
+                        buttons: ['copy', 'csv', 'excel']
+                    });
+
+                    // Update hospital selectors
+                    updateHospitalSelectors(data);
+                });
+        }
+
+        function applyMinCasesFilter() {
+            minCasesFilter = parseInt($('#minCases').val()) || 0;
+            hospitalsTable.draw();
+        }
+
+        function updateHospitalSelectors(data) {
+            const selectors = ['#hospital1Select', '#hospital2Select'];
+            selectors.forEach(selector => {
+                const select = $(selector);
+                const currentValue = select.val();
+                select.empty().append('<option value="">Select Hospital</option>');
+                data.forEach(hospital => {
+                    select.append(`<option value="${hospital.id}">${hospital.name}</option>`);
+                });
+                if (currentValue) {
+                    select.val(currentValue);
+                }
+            });
+        }
+
+        function setupEventListeners() {
+            // STAT category filter change
+            $('#statCategoryFilter').on('change', function() {
+                loadHospitalsData();
+                updateComparison();
+                updateVisualization();
+            });
+
+            // Minimum cases filter
+            $('#applyMinCases').on('click', applyMinCasesFilter);
+            $('#minCases').on('keypress', function(e) {
+                if (e.which === 13) { // Enter key
+                    applyMinCasesFilter();
+                }
+            });
+
+            // Comparison selectors change
+            $('#hospital1Select, #hospital2Select, #comparisonCategory').on('change', updateComparison);
+
+            // Visualization controls
+            $('#plotType').on('change', function() {
+                const showMetric2 = $(this).val() === 'scatter';
+                $('#metric2Container').toggle(showMetric2);
+                updateVisualization();
+            });
+
+            $('#metric1, #metric2, #vizCategory').on('change', updateVisualization);
+        }
+
+        function updateComparison() {
+            const hospital1 = $('#hospital1Select').val();
+            const hospital2 = $('#hospital2Select').val();
+            const category = $('#comparisonCategory').val();
+
+            if (!hospital1 || !hospital2) return;
+
+            fetch(`/api/compare?hospital1=${hospital1}&hospital2=${hospital2}&category=${category}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateComparisonChart(data);
+                    updateComparisonTable(data);
+                });
+        }
+
+        function updateComparisonChart(data) {
+            const metrics = ['Observed Mortality Rate', 'Expected Mortality Rate', 'O/E Ratio'];
+            const traces = metrics.map(metric => ({
+                x: [data.hospital1.name, data.hospital2.name],
+                y: [data.hospital1[metric.toLowerCase()], data.hospital2[metric.toLowerCase()]],
+                name: metric,
+                type: 'bar'
+            }));
+
+            const layout = {
+                barmode: 'group',
+                title: 'Hospital Comparison',
+                yaxis: { title: 'Rate / Ratio' }
+            };
+
+            Plotly.newPlot('comparisonChart', traces, layout);
+        }
+
+        function updateVisualization() {
+            const plotType = $('#plotType').val();
+            const metric1 = $('#metric1').val();
+            const metric2 = $('#metric2').val();
+            const category = $('#vizCategory').val();
+            
+            // Get selected hospitals if any
+            const selectedHospitals = $('#selectHospitalsToggle').is(':checked') 
+                ? $('#hospitalSelector').val() 
+                : [];
+            
+            let url = `/api/visualization?type=${plotType}&metric1=${metric1}&metric2=${metric2}&category=${category}`;
+            selectedHospitals.forEach(h => url += `&hospitals[]=${h}`);
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (plotType === 'single') {
+                        createBarChart(data, metric1);
+                    } else {
+                        createScatterPlot(data, metric1, metric2);
+                    }
+                });
+        }
+
+        function createBarChart(data, metric) {
+            const trace = {
+                x: data.map(h => h.name),
+                y: data.map(h => h[metric]),
+                type: 'bar',
+                name: metric
+            };
+
+            const layout = {
+                title: `${metric.replace(/_/g, ' ').toUpperCase()} by Hospital`,
+                xaxis: {
+                    tickangle: -45,
+                    automargin: true
+                },
+                yaxis: { title: metric.replace(/_/g, ' ').toUpperCase() }
+            };
+
+            Plotly.newPlot('visualizationChart', [trace], layout);
+        }
+
+        function createScatterPlot(data, metric1, metric2) {
+            const trace = {
+                x: data.map(h => h[metric1]),
+                y: data.map(h => h[metric2]),
+                mode: 'markers+text',
+                type: 'scatter',
+                text: data.map(h => h.name),
+                textposition: 'top center'
+            };
+
+            const layout = {
+                title: 'Hospital Comparison',
+                xaxis: { title: metric1.replace(/_/g, ' ').toUpperCase() },
+                yaxis: { title: metric2.replace(/_/g, ' ').toUpperCase() }
+            };
+
+            Plotly.newPlot('visualizationChart', [trace], layout);
+        }
+    </script>
+</body>
+</html>
