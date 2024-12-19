@@ -29,39 +29,49 @@
             width: 100% !important;
             height: 600px !important;
         }
+        .dashboard-header {
+            text-align: left;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 1.5rem;
+        }
+        .dashboard-header h1 {
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .dashboard-header p {
+            color: #6c757d;
+            margin-bottom: 0;
+            font-size: 1.1rem;
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="#">STS Congenital Dashboard</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                </ul>
-            </div>
+    <div class="container-fluid p-4">
+        <div class="dashboard-header">
+            <h1>STS Congenital Dashboard</h1>
+            <p>Interactive visualizations of mortality outcomes from the Society of Thoracic Surgeons Congenital Heart Surgery Database (2020-2023)</p>
         </div>
-    </nav>
 
-    <div class="container-fluid mt-4">
         <!-- Tab Navigation -->
         <ul class="nav nav-tabs" id="mainTabs" role="tablist">
             <li class="nav-item">
                 <a class="nav-link active" id="datatable-tab" data-bs-toggle="tab" href="#datatable" role="tab">All Hospitals Data</a>
             </li>
+            <!-- Commented out head-to-head comparison
             <li class="nav-item">
-                <a class="nav-link" id="comparison-tab" data-bs-toggle="tab" href="#comparison" role="tab">Head-to-Head Comparison</a>
+                <a class="nav-link" id="comparison-tab" data-bs-toggle="tab" href="#comparison" role="tab">Compare Hospitals</a>
             </li>
+            -->
             <li class="nav-item">
                 <a class="nav-link" id="visualization-tab" data-bs-toggle="tab" href="#visualization" role="tab">Visualization</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="author-tab" data-bs-toggle="tab" href="#author" role="tab">Author</a>
+                <a class="nav-link" id="about-tab" data-bs-toggle="tab" href="#about" role="tab">About</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="about-tab" data-bs-toggle="tab" href="#about" role="tab">About</a>
+                <a class="nav-link" id="author-tab" data-bs-toggle="tab" href="#author" role="tab">Author</a>
             </li>
         </ul>
 
@@ -112,7 +122,7 @@
                 </div>
             </div>
 
-            <!-- Head-to-Head Comparison -->
+            <!-- Commented out head-to-head comparison tab content
             <div class="tab-pane fade" id="comparison" role="tabpanel">
                 <div class="card">
                     <div class="card-header">
@@ -140,6 +150,7 @@
                     </div>
                 </div>
             </div>
+            -->
 
             <!-- Visualizations -->
             <div class="tab-pane fade" id="visualization" role="tabpanel">
@@ -199,25 +210,6 @@
                 </div>
             </div>
 
-            <!-- Author Section -->
-            <div class="tab-pane fade" id="author" role="tabpanel">
-                <div class="card">
-                    <div class="card-body">
-                        <h4>Author</h4>
-                        <p>This dashboard provides an enhanced interface for analyzing STS (Society of Thoracic Surgeons) Congenital Heart Surgery data. It was created by Joseph Obiajulu, a third-year medical student at NYU Grossman School of Medicine.</p>
-
-                        <h4>Data Source</h4>
-                        <p>All data is sourced from the Society of Thoracic Surgeons (STS) Public Reporting website. The dashboard provides an enhanced interface for analyzing and comparing congenital heart surgery outcomes across participating institutions.</p>
-
-                        <h4>Contact</h4>
-                        <p>For questions or feedback about this dashboard, please contact Joseph Obiajulu at <a href="mailto:joseph.obiajulu@nyulangone.org">joseph.obiajulu@nyulangone.org</a>.</p>
-
-                        <h4>Source Code</h4>
-                        <p>The source code for this project is available on <a href="https://github.com/jobiajulu/chd-dashboard" target="_blank">GitHub</a>.</p>
-                    </div>
-                </div>
-            </div>
-
             <!-- About Section -->
             <div class="tab-pane fade" id="about" role="tabpanel">
                 <div class="card">
@@ -254,6 +246,25 @@
                         </ul>
 
                         <p class="mt-3"><small class="text-muted">Source: Society of Thoracic Surgeons Public Reporting Documentation</small></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Author Section -->
+            <div class="tab-pane fade" id="author" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Author</h4>
+                        <p>This dashboard provides an enhanced interface for analyzing STS (Society of Thoracic Surgeons) Congenital Heart Surgery data. It was created by Joseph Obiajulu, a third-year medical student at NYU Grossman School of Medicine.</p>
+
+                        <h4>Data Source</h4>
+                        <p>All data is sourced from the Society of Thoracic Surgeons (STS) Public Reporting website. The dashboard provides an enhanced interface for analyzing and comparing congenital heart surgery outcomes across participating institutions.</p>
+
+                        <h4>Contact</h4>
+                        <p>For questions or feedback about this dashboard, please contact Joseph Obiajulu at <a href="mailto:joseph.obiajulu@nyulangone.org">joseph.obiajulu@nyulangone.org</a>.</p>
+
+                        <h4>Source Code</h4>
+                        <p>The source code for this project is available on <a href="https://github.com/jobiajulu/chd-dashboard" target="_blank">GitHub</a>.</p>
                     </div>
                 </div>
             </div>
@@ -398,7 +409,6 @@
             // STAT category filter change
             $('#statCategoryFilter').on('change', function() {
                 loadHospitalsData();
-                updateComparison();
                 updateVisualization();
             });
 
@@ -410,9 +420,6 @@
                 }
             });
 
-            // Comparison selectors change
-            $('#hospital1, #hospital2, #comparisonCategory').on('change', updateComparison);
-
             // Visualization controls
             $('#plotType').on('change', function() {
                 const showMetric2 = $(this).val() === 'scatter';
@@ -423,21 +430,30 @@
             $('#metric1, #metric2, #vizCategory').on('change', updateVisualization);
         }
 
-        function updateComparison() {
-            const hospital1 = $('#hospital1').val();
-            const hospital2 = $('#hospital2').val();
-            const category = $('#comparisonCategory').val();
+        function updateVisualization() {
+            const category = $('#vizCategory').val();
+            const plotType = $('#plotType').val();
+            const metric1 = $('#metric1').val();
+            const metric2 = $('#metric2').val();
+            
+            // Get selected hospitals if any
+            const selectedHospitals = $('#selectHospitalsToggle').is(':checked') 
+                ? $('#hospitalSelector').val() 
+                : [];
+            
+            let url = `/api/visualization?type=${plotType}&metric1=${metric1}&metric2=${metric2}&category=${category}`;
+            if (selectedHospitals.length) {
+                selectedHospitals.forEach(h => url += `&hospitals[]=${h}`);
+            }
 
-            if (!hospital1 || !hospital2) return;
-
-            fetch(`/api/compare?hospital1=${hospital1}&hospital2=${hospital2}&category=${category}`)
+            fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    if (data.error) {
-                        console.error(data.error);
-                        return;
+                    if (plotType === 'scatter') {
+                        createScatterPlot(data, metric1, metric2);
+                    } else {
+                        createBarChart(data, metric1);
                     }
-                    createComparisonChart(data);
                 });
         }
 
@@ -509,99 +525,17 @@
             });
         }
 
-        function createComparisonChart(data) {
-            const metrics = [
-                { key: 'total_cases', label: 'Total Cases' },
-                { key: 'observed_mortality_rate', label: 'Observed Mortality Rate (%)' },
-                { key: 'expected_mortality_rate', label: 'Expected Mortality Rate (%)' },
-                { key: 'oe_ratio', label: 'O/E Ratio' }
-            ];
-
-            const traces = [{
-                x: metrics.map(m => m.label),
-                y: metrics.map(m => data.hospital1[m.key]),
-                name: data.hospital1.name,
-                type: 'bar'
-            }, {
-                x: metrics.map(m => m.label),
-                y: metrics.map(m => data.hospital2[m.key]),
-                name: data.hospital2.name,
-                type: 'bar'
-            }];
-
-            const layout = {
-                barmode: 'group',
-                title: 'Hospital Comparison',
-                yaxis: {
-                    title: 'Value',
-                    zeroline: true
-                },
-                showlegend: true,
-                legend: {
-                    orientation: 'h',
-                    y: -0.2
-                },
-                margin: { t: 50, l: 60, r: 40, b: 100 },
-                autosize: true,
-                width: null,  // Let Plotly calculate width based on container
-                height: 600
-            };
-
-            const config = {
-                responsive: true,
-                displayModeBar: true
-            };
-
-            Plotly.newPlot('comparisonChart', traces, layout, config).then(() => {
-                window.dispatchEvent(new Event('resize'));
-            });
-        }
-
-        function updateVisualization() {
-            const category = $('#vizCategory').val();
-            const plotType = $('#plotType').val();
-            const metric1 = $('#metric1').val();
-            const metric2 = $('#metric2').val();
-            
-            // Get selected hospitals if any
-            const selectedHospitals = $('#selectHospitalsToggle').is(':checked') 
-                ? $('#hospitalSelector').val() 
-                : [];
-            
-            let url = `/api/visualization?type=${plotType}&metric1=${metric1}&metric2=${metric2}&category=${category}`;
-            if (selectedHospitals.length) {
-                selectedHospitals.forEach(h => url += `&hospitals[]=${h}`);
-            }
-
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    if (plotType === 'scatter') {
-                        createScatterPlot(data, metric1, metric2);
-                    } else {
-                        createBarChart(data, metric1);
-                    }
-                });
-        }
-
         function resizeCharts() {
             const visualizationChart = document.getElementById('visualizationChart');
-            const comparisonChart = document.getElementById('comparisonChart');
             
             if (visualizationChart) {
                 Plotly.Plots.resize(visualizationChart);
-            }
-            if (comparisonChart) {
-                Plotly.Plots.resize(comparisonChart);
             }
         }
 
         // Initialize everything when document is ready
         $(document).ready(function() {
             initializeHospitalAutocomplete();
-            
-            // Event listeners for comparison
-            $('#hospital1, #hospital2, #comparisonCategory').on('change', updateComparison);
             
             // Event listeners for visualization
             $('#vizCategory, #plotType, #metric1, #metric2').on('change', updateVisualization);
