@@ -35,41 +35,10 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#aboutModal">About</a>
-                    </li>
                 </ul>
             </div>
         </div>
     </nav>
-
-    <!-- About Modal -->
-    <div class="modal fade" id="aboutModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">About STS Congenital Dashboard</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <h4>Creator</h4>
-                    <p>This dashboard was created by Joseph Obiajulu, a third-year medical student at NYU Grossman School of Medicine.</p>
-
-                    <h4>Citation</h4>
-                    <p>If you use this dashboard in your research, please cite:</p>
-                    <div class="bg-light p-3 rounded">
-                        <p class="mb-0">Obiajulu J. (2024). Interactive Dashboard for STS Congenital Heart Surgery Database Public Reporting. [Publication details pending]</p>
-                    </div>
-
-                    <h4 class="mt-4">Data Source</h4>
-                    <p>All data is sourced from the Society of Thoracic Surgeons (STS) Public Reporting website. The dashboard provides an enhanced interface for analyzing and comparing congenital heart surgery outcomes across participating institutions.</p>
-
-                    <h4>Contact</h4>
-                    <p>For questions or feedback about this dashboard, please contact Joseph Obiajulu at <a href="mailto:joseph.obiajulu@nyulangone.org">joseph.obiajulu@nyulangone.org</a>.</p>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div class="container-fluid mt-4">
         <!-- Tab Navigation -->
@@ -81,7 +50,10 @@
                 <a class="nav-link" id="comparison-tab" data-bs-toggle="tab" href="#comparison" role="tab">Head-to-Head Comparison</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="visualization-tab" data-bs-toggle="tab" href="#visualization" role="tab">Visualizations</a>
+                <a class="nav-link" id="visualization-tab" data-bs-toggle="tab" href="#visualization" role="tab">Visualization</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="about-tab" data-bs-toggle="tab" href="#about" role="tab">About</a>
             </li>
         </ul>
 
@@ -230,6 +202,31 @@
                     </div>
                     <div class="card-body">
                         <div id="visualizationChart" class="comparison-chart"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Section -->
+            <div class="tab-pane fade" id="about" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>About</h4>
+                        <p>This dashboard provides an enhanced interface for analyzing STS (Society of Thoracic Surgeons) Congenital Heart Surgery data. It was created by Joseph Obiajulu, a third-year medical student at NYU Grossman School of Medicine.</p>
+
+                        <h4>Data Source</h4>
+                        <p>All data is sourced from the Society of Thoracic Surgeons (STS) Public Reporting website. The dashboard provides an enhanced interface for analyzing and comparing congenital heart surgery outcomes across participating institutions.</p>
+
+                        <h4>Contact</h4>
+                        <p>For questions or feedback about this dashboard, please contact Joseph Obiajulu at <a href="mailto:joseph.obiajulu@nyulangone.org">joseph.obiajulu@nyulangone.org</a>.</p>
+
+                        <h4>Source Code</h4>
+                        <p>The source code for this project is available on <a href="https://github.com/jobiajulu/chd-dashboard" target="_blank">GitHub</a>.</p>
+
+                        <h4>Citation</h4>
+                        <p>If you use this dashboard in your research, please cite it as:</p>
+                        <blockquote class="border-start ps-3">
+                            Obiajulu, J. (2023). STS Congenital Heart Surgery Dashboard. Retrieved from https://github.com/jobiajulu/chd-dashboard
+                        </blockquote>
                     </div>
                 </div>
             </div>
